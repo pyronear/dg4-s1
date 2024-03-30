@@ -1,5 +1,6 @@
 better-abc
 cameratransform @ git+https://github.com/rgerum/cameratransform.git
+elevation
 geopandas
 ipympl
 jupyterlab
@@ -10,3 +11,4 @@ pandas
 pandera
 pyproj
 pyvista[all, trame, trimesh, rtree, pyembree]
+rioxarray

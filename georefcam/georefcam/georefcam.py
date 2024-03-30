@@ -158,7 +158,7 @@ class GeoRefCam:
 
         try:
             df_inter = getattr(self, f"_cast_rays_{cast_method}")(df_ray)
-        except:
+        except TimeoutError:
             logger.error(f"The ray casting operation reached the timeout threshold of {max_cp_time_s} s")
             return None, None, None
 
@@ -225,14 +225,20 @@ class GeoRefCam:
             origin = (ray.ori_x, ray.ori_y, ray.ori_z)
             destination = (ray.dest_x, ray.dest_y, ray.dest_z)
             inter_point, inter_triangle = self.dem.mesh.ray_trace(origin, destination)
+            # logger.debug(f"ray origin: {origin} | ray destination: {destination}\ninter_point:\n{inter_point}\ninter_triangle: {inter_triangle}")
             for point, triangle in zip(inter_point, inter_triangle):
                 inter_points.append(point)
                 parent_rays.append([parent_ray])
                 inter_triangles.append([triangle])
 
         inter_points, parent_rays, inter_triangles = np.array(inter_points), np.array(parent_rays), np.array(inter_triangles)
+        # logger.debug(f"inter_points:\n{inter_points}\nparent_rays:\n{parent_rays}\ninter_triangles:\n{inter_triangles}")
+        if len(inter_points) != 0:
+            data = np.hstack((inter_points, parent_rays, inter_triangles))
+        else:
+            data = None
         df_inter = pd.DataFrame(
-            data=np.hstack((inter_points, parent_rays, inter_triangles)),
+            data=data,
             columns=["inter_x", "inter_y", "inter_z", "n_ray", "n_tri"]
         )
         df_inter = df_inter.astype({"n_ray": int, "n_tri": "Int64"})  # the type assigned to 'n_tri' works as a nullable integer type
@@ -281,8 +287,8 @@ class GeoRefCam:
         df_ray = df_ray.merge(df_inter[["inter_x", "inter_y", "inter_z", "n_ray", "n_tri", "dist_o"]], on="n_ray", how="left")
         df_ray = df_ray.sort_values("n_ray").set_index("n_ray")
 
-        filtered_inter_points = df_ray[["inter_x", "inter_y", "inter_z"]].values
-        filtered_inter_triangles = df_ray.n_tri.values
+        filtered_inter_points = df_ray[["inter_x", "inter_y", "inter_z"]].to_numpy(dtype=float)
+        filtered_inter_triangles = df_ray.n_tri.to_numpy(dtype=float)
 
         return filtered_inter_points, filtered_inter_triangles, df_ray
 
