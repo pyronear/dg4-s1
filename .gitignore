@@ -1,7 +1,10 @@
 **/.fuse_hidden*
+lidar/cache/*
 lidar/data/MNS/*.laz
 lidar/data/pyronear_cam_data/*
 lidar/data/ds_eval_loc/*
+lidar/data/horizon/OSM/*
+lidar/data/MNS/OSM/*
 **/__pycache__/*
 .token
 .venv

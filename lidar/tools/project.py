@@ -2,20 +2,33 @@ import numpy as np
 from pyproj import Transformer
 import matplotlib.pyplot as plt
 
-def to_lambert93(lat, lon, altitude):
+def to_lambert93(lat, lon, altitude=None):
     '''project a point from latitude longitude (ESPG:4326) to Lambert 93 coordinates (ESPG:2154)
 
     Args:
         lat (float): latitude
         lon (float): longitude
-        altitude (float): altitude
+        altitude (float, optional): altitude
 
     Returns:
-        np.array: [x,y,z]
+        np.array: [x,y,z] or [x, y] if no altitude
     '''
     projector = Transformer.from_crs("EPSG:4326", "EPSG:2154")
-    point = np.array(projector.transform(lat,lon)+(altitude,))
+    point = np.array(projector.transform(lat,lon))
+    if altitude:
+        point = np.append(point, altitude)
     return point
+
+def array_to_lambert93(array):
+    projector = Transformer.from_crs("EPSG:4326", "EPSG:2154")
+    def row_to_lambert_93(row):
+        point = np.array(projector.transform(row[0],row[1]))
+        if len(row) == 3:
+            point = np.append(point, row[2])
+        return point
+    projected = np.apply_along_axis(row_to_lambert_93, 1, array)
+    return projected
+
 
 def to_lat_lon(x, y, z):
     '''project a point from Lambert 93 (ESPG:2154) to latitude longitude coordinates (ESPG:4326) 
@@ -153,22 +166,6 @@ def get_skyline(angles, threshold=1e-1, savepath=False):
         np.save(savepath+'.npy', skyline)
     return skyline
 
-def plot_skyline(skyline, title):
-    '''Plot the maximum elevation angle according to the azimuth angle
-
-    Args:
-        skyline (np.array (360,)): the skyline data (max theta for each phi)
-        title (str): the plot title
-    '''
-    plt.style.use('default')
-    plt.figure(figsize=(20,5))
-    plt.plot(skyline, linewidth=3, color='sienna')
-    font_params = {'size':15}
-    plt.title(title, fontdict=font_params)
-    plt.xlabel("Azimuth angle (°)", fontdict=font_params)
-    plt.ylabel("Max elevation angle (°)", fontdict=font_params)
-    plt.show()
-
 def skyline_to_cartesian(spherical, angles, skyline, view_point, max_z):
     '''Transform the skyline to cartesian coordinates, so it can be diplayed with the terrain
 
@@ -212,3 +209,46 @@ def unproject(u,v,w,param):
     # project camera coordinates to world coordinates
     x,y,z,_ = np.linalg.inv(param.extrinsic).dot(np.append(ray,1))
     return [x,y,z]
+
+def distance_points_refpoint(points, refpoint):
+    '''Compute the distance of each points with a reference point
+
+    Args:
+        points (array (N,2)): list of points
+        refpoint (array (2,)): reference point
+
+    Returns:
+        np.array (N,): list of distances
+    '''
+    sq = np.square(np.subtract(points, refpoint))
+    dist = np.sqrt(np.sum(sq, axis=1))
+    return dist
+
+def distance_points_points(points1, points2):
+    '''Compute each distances between two list of points.
+
+    Args:
+        points1 (np.array (N,2)): list of points
+        points2 (np.array (M,2)): list of points
+
+    Returns:
+        np.array (N,M): upper triangular matrix with distances
+    '''
+    dist_matrix = np.full((len(points1), len(points2)), 0.0)
+    for i, point in enumerate(points2):
+        dist_matrix[i,i:] = distance_points_refpoint(points1[i:], point)
+    return dist_matrix
+
+def closest_point(terrain_points, view_point):
+    '''return the point index in terrain_point that is the closest to the viewpoint
+
+    Args:
+        terrain_points (np.array (N,2)): list of points that makes the terrain
+        view_point (np.array (2,)): point
+
+    Returns:
+        int: index of the closest point
+    '''
+    dist = distance_points_refpoint(terrain_points, view_point)
+    closest = np.argmin(dist)
+    return closest

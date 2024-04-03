@@ -175,21 +175,23 @@ def bounds_from_distance(lat, lon, distance):
     dlon = dlat / math.cos(math.radians(lat))
     return [lon - dlon, lat - dlat, lon + dlon, lat + dlat]
 
-def download_from_eio(datapath, name, lat, lon, distance=50):
+def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None):
     '''Download elevation data and save it as .xyz file
-
+        Filled arguments must be either (lat, lon and distance), or (bounds)
     Args:
         datapath (str): path to the data folder
         name (str): name to identify files
-        lat (float): latitude of viewpoint
-        lon (float): longitude of viewpoint
-        distance (int, optional): ditance to load around viewpoint. Defaults to 50.
+        lat (float, optional): latitude of viewpoint
+        lon (float, optional): longitude of viewpoint
+        distance (int, optional): distance to load around viewpoint. Defaults to 50.
+        bounds (list): [x1, y1, x2, y2], load data within these bounds. 
 
     Returns:
         _type_: _description_
     '''
     # get bounds
-    bounds = bounds_from_distance(lat, lon, distance)
+    if not bounds:
+        bounds = bounds_from_distance(lat, lon, distance)
     tiff_file = Path.cwd().as_posix()+datapath.replace('.', '')+name+'.tiff'
     # download elevation data
     eio.clip(bounds=bounds, output=tiff_file, product='SRTM3') # take some time proportional to distance
@@ -231,16 +233,28 @@ def load_skyline(filepath, fov, width, height, plot=False):
     image_skyline[:,1] = height-image_skyline[:,1]
     # sort
     image_skyline = image_skyline[image_skyline[:, 0].argsort()]
-
+    # get unique x values and indexes
+    uniques = np.unique(image_skyline[:, 0], return_index=True)
+    x_values = uniques[0].astype(int)
+    y_values = []
+    # group by x and compute mean of grouped y values
+    grouped_by_x = np.split(image_skyline[:,1], uniques[1][1:])
+    for ys in grouped_by_x:
+        y_values.append(np.mean(ys))
+    # interpolate to be sure to have a y value for each x
+    full_skyline = np.interp(np.arange(0,width), x_values, y_values)
+    # smooth skyline
+    n=5
+    smooth_image_skyline = np.convolve(full_skyline, np.ones(n)/n, mode='valid')
     # downsample the image skyline to the fov width
     indices = np.linspace(0, width, num=fov, dtype=int, endpoint=False)
-    reduced_image_skyline = np.interp(indices, image_skyline[:,0], image_skyline[:,1])
+    reduced_image_skyline = np.take(smooth_image_skyline, indices)
     
     # plot if requested
     if plot:
         plt.xlim(0, width)
         plt.ylim(0, height)
-        plt.plot(indices, reduced_image_skyline, linewidth=3, color='sienna')
+        plt.plot(indices, reduced_image_skyline, linewidth=3, color='blue')
         plt.title('Skyline from image')
         plt.show()
 

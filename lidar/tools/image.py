@@ -82,9 +82,17 @@ def compare(images, title):
         title (str): plot title
     '''
     n = len(images)
-    fig, axarr = plt.subplots(1,n, figsize=(5*n, 15))
+    fig, axarr = plt.subplots(1, n, figsize=(7*n, 15))
     for i, img in enumerate(images):
-        axarr[i].imshow(img)
+        if isinstance(img, np.ndarray):
+            axarr[i].imshow(img)
+        elif isinstance(img, plt.Figure):
+            axarr[i].imshow(img.canvas.renderer.buffer_rgba())
+        else:
+            raise TypeError(f"Unsupported plot type: {type(img)}")
         axarr[i].axis('off')
-    plt.title(title)
+    plt.tight_layout()
+    fig.suptitle(title, size=20)
+    fig.subplots_adjust(top=1.6)
+
     plt.show()
