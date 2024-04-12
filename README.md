@@ -5,7 +5,7 @@
 ## Contenu
 
 Les trois modules principaux sont :
-- `georefcam.py` : contient la classe GeoRefCam utilisée pour la procédure complète de projection de point depuis le repère image vers le MNT dans le repère monde
+- `georefcam.py` : contient la classe GeoRefCam utilisée pour la procédure complète de projection de point depuis le repère image vers le MNT dans le repère monde. Il permet également d'évaluer une correction des paramètres d'orientation de la caméra par comparaison d'une image témoin avec le MNT
 - `dem.py` : contient les classes utilisées pour la représentation de MNTs ; contient aussi la classe abstraite codifiant leurs APIs
 - `camera_model.py` : contient les classes utilisées pour la modélisation de caméras géolocalisées/orientées, et la projection de points depuis le repère image vers des rayons dans le repère monde ; contient aussi la classe abstraite codifiant leurs APIs 
 
@@ -15,11 +15,13 @@ Le dossier **demo_notebooks** contient des notebooks de test/viz des capacités 
 
 Les points d'intérêt sont issus du fichier `df_annotations.csv` qui contient les coordonnées de GCPs relevés manuellement afin de pouvoir comparer les projections faites avec une vérité terrain (approximative).
 
-Le dossier contient également un notebook qui teste la projection de multiple points en coordonnées pixels sur le MNT environnant.
+Le dossier contient également
+- un notebook qui benchmark la projection de multiple points en coordonnées pixels sur le MNT environnant
+- un notebook qui démontre la correction automatique des paramètres d'orientation de la caméra
 
 ### Exécution des notebook test
 
-Les étapes nécessaires à l'exécution du notebook sont donc les suivantes :
+Les étapes nécessaires à l'exécution d'un notebook sont donc les suivantes :
 - Installation des dépendances nécessaires : `pip install -r georefcam/requirements.txt`
 - Installation du package `georefcam` : `pip install georefcam/`
 - Téléchargement des [données et galeries d'images de caméras](https://drive.google.com/file/d/1GsJIjNyjnZjV2tzMuB0xTZ2hwz-lpRjB/view?usp=sharing)
@@ -27,4 +29,4 @@ Les étapes nécessaires à l'exécution du notebook sont donc les suivantes :
 - Édition de la cellule du notebook qui indique les chemins de dossiers contenant les données
 - Exécution séquentielle du notebook
 
-Le notebook a été testé sur Jupyter Lab, dans un environnement virtuel généré à l'aide du fichier `requirements.txt` avec Python 3.10.12 sur Ubuntu 22.04.
+Les notebooks a été testé sur Jupyter Lab, dans un environnement virtuel généré à l'aide du fichier `requirements.txt` avec Python 3.10.12 sur Ubuntu 22.04.

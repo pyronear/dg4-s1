@@ -4,7 +4,7 @@ import pandas as pd
 import pyvista as pv
 import rioxarray
 
-from .data_types import Coord1DFloatGrid
+from .data_types import Coord1DFloatGrid, Coord3DFloatGrid
 from .logger import logger
 from abc import abstractmethod
 from better_abc import ABCMeta, abstract_attribute
@@ -20,11 +20,20 @@ class AbstractDEM(metaclass=ABCMeta):
     This abstract class codifies the public methods (and their respective
     signatures) that must be exposed by DEM classes. Such classes must inherit
     from this abstract class.
+
+    Attributes
+    ----------
+    crs : str | CRS | rioCRS
+        The CRS of the system.
+    pcd : Coord3DFloatGrid | None
+        The point cloud representing the DEM of the file.
+    mesh : pv.PolyData | None
+        The triangular mesh associated with the point cloud.
     """
 
     crs: str | CRS | rioCRS | None = abstract_attribute()
+    pcd: Coord3DFloatGrid = abstract_attribute()
     mesh: pv.PolyData | None = abstract_attribute()
-    pcd = abstract_attribute()
 
     @abstractmethod
     def build_pcd(self, sample_step: int) -> None:

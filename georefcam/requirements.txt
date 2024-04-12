@@ -7,8 +7,12 @@ jupyterlab
 matplotlib
 nptyping
 numpy
+opencv-python
 pandas
 pandera
 pyproj
 pyvista[all, trame, trimesh, rtree, pyembree]
+rasterio
 rioxarray
+torch
+transformers

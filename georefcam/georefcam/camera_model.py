@@ -2,7 +2,7 @@ import cameratransform as ct
 import numpy as np
 
 from .data_types import Coord2DIntPoints, RayCoord3DFloatPoints
-from.logger import logger
+from .logger import logger
 from abc import abstractmethod
 from better_abc import ABCMeta, abstract_attribute
 from pyproj import CRS, Transformer
@@ -15,9 +15,18 @@ class AbstractCameraModel(metaclass=ABCMeta):
     This abstract class codifies the public methods (and their respective
     signatures) that must be exposed by camera model classes. Such classes must
     inherit from this abstract class.
+
+    Attributes
+    ----------
+    crs : str | CRS | rioCRS
+        The CRS of the system.
+    cam_loc : tuple[float, float, float, CRS | rioCRS]
+        The location of the camera in a given CRS to be used by third parties.
+        Its values respectively are [lat, lon, alt_m, CRS].
     """
 
     crs: str | CRS | rioCRS = abstract_attribute()
+    cam_loc: tuple[float, float, float, str | CRS | rioCRS] = abstract_attribute()
 
     @abstractmethod
     def project_pixel_points_to_world_rays(self, pixels: Coord2DIntPoints) -> RayCoord3DFloatPoints:
@@ -97,6 +106,9 @@ class SimpleCameraModel(AbstractCameraModel):
         The latitude of the camera location projected into the local CRS.
     proj_lon : float
         The longitude of the camera location projected into the local CRS.
+    cam_loc : tuple[float, float, float, CRS | rioCRS]
+        The location of the camera in a given CRS to be used by third parties.
+        Its values respectively are [lat, lon, alt_m, CRS].
 
     """
 
@@ -128,6 +140,7 @@ class SimpleCameraModel(AbstractCameraModel):
         self.tf_wgs84_to_local = Transformer.from_crs("wgs84", self.crs)
         self.tf_local_to_wgs84 = Transformer.from_crs(self.crs, "wgs84")
         self.proj_lat, self.proj_lon = self.tf_wgs84_to_local.transform(self.lat, self.lon)
+        self.cam_loc = (self.lat, self.lon, self.alt_m, self.crs)
 
     def project_pixel_points_to_world_rays(self, pixels: Coord2DIntPoints) -> RayCoord3DFloatPoints:
         """Projects a collection of pixel coordinates to real-world rays.
@@ -178,46 +191,77 @@ class CTCameraModel(AbstractCameraModel):
 
     Parameters
     ----------
-    device_params : dict[str, float | tuple[int, int]]
-        The device parameters, in a format accepted by
-        `ct.RectiLinearProjection()`.
-    ypr_orientation_params : dict[str, float]
-        The yaw-pitch-roll parameters, in a format accepted by
-        `ct.SpatialOrientationYawPitchRoll()`.
-    location_params : dict[str, float]
-        The latitude-longitude-elevation parameters, in a format accepted by
-        `ct.Camera.setGPSpos()`.
+    image_res : tuple[int, int]
+        The (width, height) image resolution.
+    view_x_deg : float
+        The horizontal angle of view.
+    view_y_deg : float
+        The vertical angle of view.
+    yaw_deg : float
+        The yaw (i.e. azimuth) of the camera.
+    pitch_deg : float
+        The pitch of the camera.
+    roll_deg : float
+        The roll of the camera.
+    lat : float
+        The latitude of the camera location.
+    lon : float
+        The longitude of the camera location.
+    alt_m : float
+        The altitude of the camera location.
 
     Attributes
     ----------
-    device_params : dict[str, float | tuple[int, int]]
-        The device parameters, in a format accepted by
-        `ct.RectiLinearProjection()`.
-    ypr_orientation_params : dict[str, float]
-        The yaw-pitch-roll parameters, in a format accepted by
-        `ct.SpatialOrientationYawPitchRoll()`.
-    location_params : dict[str, float]
-        The latitude-longitude-elevation parameters, in a format accepted by
-        `ct.Camera.setGPSpos()`.
+    image_res : tuple[int, int]
+        The (width, height) image resolution.
+    view_x_deg : float
+        The horizontal angle of view.
+    view_y_deg : float
+        The vertical angle of view.
+    yaw_deg : float
+        The yaw (i.e. azimuth) of the camera.
+    pitch_deg : float
+        The pitch of the camera.
+    roll_deg : float
+        The roll of the camera.
+    lat : float
+        The latitude of the camera location.
+    lon : float
+        The longitude of the camera location.
+    alt_m : float
+        The altitude of the camera location.
     crs : str
         The CRS of the system in string format, set to "WGS84".
+    cam_loc : tuple[float, float, float, str]
+        The location of the camera in a given CRS to be used by third parties.
+        Its values respectively are [lat, lon, alt_m, CRS].
     """
 
     crs = "WGS84"
 
     def __init__(
             self,
-            device_params: dict[str, float | tuple[int, int]],
-            ypr_orientation_params: dict[str, float],
-            location_params: dict[str, float]
+            image_res: tuple[int, int],
+            view_x_deg: float,
+            view_y_deg: float,
+            yaw_deg: float,
+            pitch_deg: float,
+            roll_deg: float,
+            lat: float,
+            lon: float,
+            alt_m: float,
     ) -> None:
 
-        self.device_params, self.ypr_orientation_params, self.location_params = device_params, ypr_orientation_params, location_params
+        self.image_res, self.view_x_deg, self.view_y_deg = image_res, view_x_deg, view_y_deg
+        self.yaw_deg, self.pitch_deg, self.roll_deg = yaw_deg, pitch_deg, roll_deg
+        self.lat, self.lon, self.alt_m = lat, lon, alt_m
+
         self.cam_model = ct.Camera(
-            ct.RectilinearProjection(**device_params),
-            ct.SpatialOrientationYawPitchRoll(**ypr_orientation_params)
+            ct.RectilinearProjection(image=self.image_res, view_x_deg=self.view_x_deg, view_y_deg=self.view_y_deg),
+            ct.SpatialOrientationYawPitchRoll(elevation_m=self.alt_m, pitch_deg=self.pitch_deg, roll_deg=self.roll_deg, yaw_deg=self.yaw_deg)
         )
-        self.cam_model.setGPSpos(location_params["lat"], location_params["lon"], location_params["alt"])
+        self.cam_model.setGPSpos(lat=self.lat, lon=self.lon)
+        self.cam_loc = (self.lat, self.lon, self.alt_m, self.crs)
 
     def project_pixel_points_to_world_rays(self, pixels: Coord2DIntPoints) -> RayCoord3DFloatPoints:
         """Projects a collection of pixel coordinates to real-world rays.
@@ -242,7 +286,7 @@ class CTCameraModel(AbstractCameraModel):
         """
 
         proj_pixels = self.cam_model.gpsFromImage(pixels)
-        campoint_world = np.array([self.location_params["lat"], self.location_params["lon"], self.location_params["alt"]])
+        campoint_world = np.array([self.lat, self.lon, self.alt_m])
         campoint_world_broadcasted = np.broadcast_to(campoint_world, proj_pixels.shape)
         proj_rays = np.dstack((campoint_world_broadcasted, proj_pixels))
 

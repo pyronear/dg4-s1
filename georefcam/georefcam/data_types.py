@@ -7,6 +7,8 @@ Coord1DFloatGrid = NDArray[Shape["* n_rows, * n_cols, [z]"], Float]
 Coord2DIntPoints = NDArray[Shape["* n_points, [x, y]"], Int]
 Coord3DFloatGrid = NDArray[Shape["* n_rows, * n_cols, [x, y, z]"], Float]
 Coord3DFloatPoints = NDArray[Shape["* n_points, [x, y, z]"], Float]
+ImageArrayGray = NDArray[Shape["* height, * width, 1 grayscale"], Int]
+ImageArrayRGB = NDArray[Shape["* height, * width, 3 rgb"], Int]
 RayCoord3DFloatPoints = NDArray[Shape["* n_points, [x, y, z], [origin, destination]"], Float]
 
 
