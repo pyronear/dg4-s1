@@ -108,6 +108,28 @@ def callbacks(parameters, view_point):
         ctr.convert_from_pinhole_camera_parameters(parameters, True)
         print('field of view:', ctr.get_field_of_view())
         return False
+    
+    def set_fov(vis):
+        '''Increase the camera field of view
+        Args:
+            vis (o3d.visualization.Visualizer): visualizer
+        Returns:
+            bool: False
+        '''
+        ctr = vis.get_view_control()
+        ctr.change_field_of_view(step=1)
+        return False
+    
+    def set_fov_back(vis):
+        '''Decrease the camera field of view
+        Args:
+            vis (o3d.visualization.Visualizer): visualizer
+        Returns:
+            bool: False
+        '''
+        ctr = vis.get_view_control()
+        ctr.change_field_of_view(step=-1)
+        return False
 
     def look_at_view_point(vis):
         '''Set the local front axis to look at viewpoint
@@ -144,6 +166,8 @@ def callbacks(parameters, view_point):
     key_to_callback[ord("V")] = set_view
     key_to_callback[ord("L")] = look_at_view_point
     key_to_callback[ord("D")] = save_depth
+    key_to_callback[ord("F")] = set_fov
+    key_to_callback[ord("G")] = set_fov_back
 
     return key_to_callback
 

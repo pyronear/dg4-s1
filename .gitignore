@@ -2,9 +2,13 @@
 lidar/cache/*
 lidar/data/MNS/*.laz
 lidar/data/pyronear_cam_data/*
-lidar/data/ds_eval_loc/*
+lidar/data/alertwildfire/*
+lidar/data/geopose3k/*
+lidar/data/horizon/geopose3k/*
+lidar/data/MNS/geopose3k/*
 lidar/data/horizon/OSM/*
 lidar/data/MNS/OSM/*
+lidar/data/ds_eval_loc/*
 **/__pycache__/*
 .token
 .venv

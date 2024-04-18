@@ -2,36 +2,44 @@ import numpy as np
 from pyproj import Transformer
 import matplotlib.pyplot as plt
 
-def to_lambert93(lat, lon, altitude=None):
-    '''project a point from latitude longitude (ESPG:4326) to Lambert 93 coordinates (ESPG:2154)
+def to_xy(lat, lon, altitude=None, epsg='2154'):
+    '''project a point from latitude longitude (EPSG:4326) to X,Y coordinates, default is Lambert 93 (EPSG:2154)
 
     Args:
         lat (float): latitude
         lon (float): longitude
         altitude (float, optional): altitude
+        epsg (str): projection system code
 
     Returns:
         np.array: [x,y,z] or [x, y] if no altitude
     '''
-    projector = Transformer.from_crs("EPSG:4326", "EPSG:2154")
+    projector = Transformer.from_crs("EPSG:4326", "EPSG:"+epsg)
     point = np.array(projector.transform(lat,lon))
     if altitude:
         point = np.append(point, altitude)
     return point
 
-def array_to_lambert93(array):
-    projector = Transformer.from_crs("EPSG:4326", "EPSG:2154")
-    def row_to_lambert_93(row):
+def array_to_xy(array, epsg='2154'):
+    projector = Transformer.from_crs("EPSG:4326", "EPSG:"+epsg)
+    def row_to_xy(row):
         point = np.array(projector.transform(row[0],row[1]))
         if len(row) == 3:
             point = np.append(point, row[2])
         return point
-    projected = np.apply_along_axis(row_to_lambert_93, 1, array)
+    projected = np.apply_along_axis(row_to_xy, 1, array)
     return projected
 
+def dataframe_to_xy(df, epsg='2154'):
+    projector = Transformer.from_crs("EPSG:4326", "EPSG:"+epsg)
+    def project_row(row):
+        return np.array(projector.transform(row['y'], row['x'])+(row['z'],))
+    xyz_df = df.apply(project_row, axis=1, result_type='broadcast') # take some time
+    return xyz_df
 
-def to_lat_lon(x, y, z):
-    '''project a point from Lambert 93 (ESPG:2154) to latitude longitude coordinates (ESPG:4326) 
+
+def to_lat_lon(x, y, z, epsg_from='2154'):
+    '''project a point from X,Y (default is Lambert 93 (EPSG:2154)) to latitude longitude coordinates (EPSG:4326) 
 
     Args:
         x (float): x
@@ -41,7 +49,7 @@ def to_lat_lon(x, y, z):
     Returns:
         np.array: [lat,lon,z]
     '''
-    projector = Transformer.from_crs("EPSG:2154", "EPSG:4326")
+    projector = Transformer.from_crs("EPSG:"+epsg_from, "EPSG:4326")
     point = np.array(projector.transform(x,y)+(z,))
     return point
 
@@ -134,12 +142,12 @@ def delete_max(array):
     new_array = np.delete(array, imax)
     return m, new_array
 
-def get_skyline(angles, threshold=1e-1, savepath=False):
+def get_skyline(angles, threshold=1, savepath=False):
     '''Extract skyline from spherical coordinates points
 
     Args:
         angles (np.array (3,n)): array of spherical coordinates angles in degree [[theta,phi],...]
-        threshold (float, optional): outliers distants by more than this value are removed. Defaults to 1e-4.
+        threshold (float, optional): outliers distants by more than this value are removed. Defaults to 1.
         savepath (bool or str, optional): whether or not to save the skyline and at which path. defaults to False. 
 
     Returns:
@@ -167,7 +175,7 @@ def get_skyline(angles, threshold=1e-1, savepath=False):
     return skyline
 
 def skyline_to_cartesian(spherical, angles, skyline, view_point, max_z):
-    '''Transform the skyline to cartesian coordinates, so it can be diplayed with the terrain
+    '''Transform the skyline to cartesian coordinates, so it can be displayed with the terrain
 
     Args:
         spherical (np.array (n,3)): spherical coordinates of the terrain points
@@ -189,6 +197,36 @@ def skyline_to_cartesian(spherical, angles, skyline, view_point, max_z):
         # translate cartesian conversion to viewpoint
         skyline_points[phi] = np.add(cart_point, view_point)
     return skyline_points
+
+def skyline_depth(spherical, angles, skyline, transform_depth=True, savepath=True):
+    '''Get the radius value (depth) of the skyline in spherical coordinates
+
+    Args:
+        spherical (np.array (n,3)): spherical coordinates of the terrain points
+        angles (np.array (n,2)): angles only in degree of the terrain points
+        skyline (np.array (360,)): max elevation angle for each azimuth
+        transform_depth (bool, optional): if True, transform depth values from meters to a usable measure to later smooth the skyline
+        savepath (bool or str, optional): whether or not to save the skyline and at which path. defaults to False.
+
+    Returns:
+        np.array (360,): array of r values for each phi
+    '''
+    depths = np.empty_like(skyline)
+    # for each angle pair
+    for phi, theta in enumerate(skyline):
+        # get the index corresponding to that angle combination (spherical and angles have the same order)
+        i = np.argwhere((angles[:,0]==theta) & ((angles[:,1]-90)%360==phi))[0][0]
+        # get the radius (first coordinate) for that index
+        depths[phi] = spherical[i,0]
+    # apply transformation: int value from 0 (further) to 10 (closer)
+    if transform_depth:
+        depths = 10-depths//3000
+        depths[depths<3]=3
+
+    # save the values if requested
+    if savepath:
+        np.save(savepath+'.npy', depths)
+    return depths
 
 def unproject(u,v,w,param):
     '''Get real world coordinates (x,y,z) from image coordinates (u,v,depth)

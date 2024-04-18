@@ -1,5 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from matplotlib import cm
 import io 
 import torch
 
@@ -35,7 +36,7 @@ def smooth(array, n):
 
     Args:
         array (np.array): 1d array to smooth
-        n (int): sliding window size
+        n (int): sliding window size (n>1)
 
     Returns:
         np.array: smoothed array
@@ -50,6 +51,39 @@ def smooth(array, n):
     extended_array = np.concatenate((array[-k1:], array, array[:k2]))
     # apply moving average
     smoothed = np.convolve(extended_array, np.ones(n)/n, mode='valid')
+    return smoothed
+
+def smooth_with_depth(array, depths):
+    '''Smooth an array by applying moving average
+    the window size depends on the depth of each point
+
+    Args:
+        array (np.array): 1d array to smooth
+        array (np.array): sliding window sizes
+
+    Returns:
+        np.array: smoothed array
+    '''
+    def get_window_size(n):
+        if n%2==0:
+            k1 = int(n/2)
+            k2 = k1-1
+        else:
+            k1 = int((n-1)/2)
+            k2 = k1
+        return k1, k2
+    
+    k0, kx = get_window_size(depths.max())
+    # first smooth depths to avoid alternating between far and close (can happen if too sparse points)
+    depths = np.round(smooth(depths, 5))
+    # extend array as it was a periodic signal
+    extended_array = np.concatenate((array[-k0:], array, array[:kx]))
+    # apply moving average with changing window size
+    smoothed = np.empty_like(array)
+    for i, d in enumerate(depths):
+        k = i+k0
+        k1, k2 = get_window_size(d)
+        smoothed[i] = np.mean(extended_array[k-k1:k+k2+1])
     return smoothed
 
 def add_noise(s, scale=False):
@@ -144,8 +178,8 @@ def get_ref_signal(skyline, normalization=True):
     Returns:
         np.array: reference signal
     '''
-    if len(skyline) > 359:
-        skyline = skyline[:359]
+    if len(skyline) > 360:
+        skyline = skyline[:360]
     ref_signal = normalize(skyline) if normalization else skyline
     return ref_signal
 
@@ -204,28 +238,34 @@ def skylines_to_azimuth(ref_skyline, img_skyline, mode='square-diff'):
         azimuth = get_best_azimuth(cc, len(img_skyline), np.argmax)
     return azimuth
 
-def plot_skyline(skyline, title):
+def plot_skyline(skyline, title, depths=None):
     '''Plot the maximum elevation angle according to the azimuth angle
 
     Args:
         skyline (np.array (360,)): the skyline data (max theta for each phi)
         title (str): the plot title
+        depths (np.array (360,), optional): if specified, color the line according to the depth values
     '''
     plt.style.use('default')
     plt.figure(figsize=(20,5))
-    plt.plot(skyline, linewidth=3, color='sienna')
+    if isinstance(depths, np.ndarray):
+        cmap = plt.get_cmap('copper', 8)
+        plt.scatter(np.arange(360), skyline, s=40, c=10-depths, cmap=cmap, edgecolor='none')
+    else:
+        plt.plot(skyline, linewidth=3, color='sienna')
     font_params = {'size':15}
     plt.title(title, fontdict=font_params)
     plt.xlabel("Azimuth angle (°)", fontdict=font_params)
     plt.ylabel("Max elevation angle (°)", fontdict=font_params)
     plt.show()
 
-def plot_skylines_comparison(skyline, img_skyline, plot=True):
+def plot_skylines_comparison(skyline, img_skyline, force_azimuth=-1, plot=True):
     '''Plot two skylines to compare on the same graph
 
     Args:
         skyline (np.array): reference signal
         img_skyline (np.array): sub signal
+        force_azimuth (int, optional): if filled, force the position of sub signal
         plot (bool, optional): if true, display the plot, in any case returns the plot. Defaults to True.
 
     Returns:
@@ -237,7 +277,10 @@ def plot_skylines_comparison(skyline, img_skyline, plot=True):
     else:
         s_ref = skyline
         s_img = img_skyline
-    azimuth = np.argmin(square_diff(s_ref, s_img))
+    if force_azimuth >= 0:
+        azimuth = force_azimuth
+    else:
+        azimuth = np.argmin(square_diff(s_ref, s_img))
 
     plt.style.use('default')
     fig = plt.figure(figsize=(10,5))

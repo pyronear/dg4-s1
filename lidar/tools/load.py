@@ -11,6 +11,7 @@ from pathlib import Path
 import elevation as eio
 from osgeo import gdal
 from pyproj import Transformer
+from tools import project
 
 def las_to_point(las):
     '''Convert a las object into an array of points x,y,z
@@ -161,7 +162,7 @@ def load_pcd(datadir, save=""):
     return pc
 
 def bounds_from_distance(lat, lon, distance):
-    '''Compute bounds around lat loc from given distance
+    '''Compute bounds around lat lon from given distance
 
     Args:
         lat (float): latitude
@@ -175,7 +176,7 @@ def bounds_from_distance(lat, lon, distance):
     dlon = dlat / math.cos(math.radians(lat))
     return [lon - dlon, lat - dlat, lon + dlon, lat + dlat]
 
-def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None):
+def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None, epsg='2154'):
     '''Download elevation data and save it as .xyz file
         Filled arguments must be either (lat, lon and distance), or (bounds)
     Args:
@@ -185,9 +186,7 @@ def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None):
         lon (float, optional): longitude of viewpoint
         distance (int, optional): distance to load around viewpoint. Defaults to 50.
         bounds (list): [x1, y1, x2, y2], load data within these bounds. 
-
-    Returns:
-        _type_: _description_
+        epsg (str): projection system id
     '''
     # get bounds
     if not bounds:
@@ -203,11 +202,8 @@ def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None):
     # delete tiff file
     if os.path.exists(tiff_file):
         os.remove(tiff_file)
-    # project coordinates to lambert 93
-    projector = Transformer.from_crs("EPSG:4326", "EPSG:2154")
-    def project_row(row):
-        return np.array(projector.transform(row['y'], row['x'])+(row['z'],))
-    xyz_df = xyz_df.apply(project_row, axis=1, result_type='broadcast') # take some time
+    # project coordinates to xy
+    xyz_df = project.dataframe_to_xy(xyz_df, epsg)
     # save the processed xyz data
     xyz_df.to_csv(xyz_file, sep=' ', header=False, index=False)
     print('File', xyz_file, 'ready.')

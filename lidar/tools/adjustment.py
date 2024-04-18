@@ -198,7 +198,7 @@ class SignalLoader():
         '''
         w = prediction[0].item()
         b = prediction[1].item()
-        adjusted_signal = sub_signal * w + b
+        adjusted_signal = signal.normalize(sub_signal) * w + b
         return adjusted_signal
 
     def signal_correction_loss(self, prediction, target):
