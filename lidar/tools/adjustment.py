@@ -246,7 +246,7 @@ class SignalLoader():
         # retrieve target values
         encoded_target = self.Y_encode[target[:,0]]
         # Negative log likelihood
-        loss = torch.mean(-1*torch.log(torch.sum(scores*encoded_target, 1)))
+        loss = torch.mean(-1*torch.log(torch.sum(scores*encoded_target, 1))) # scores[:,:-1]
         return loss
     
     # The following functions are not differentiable due to argmin, thus cannot be used as a loss

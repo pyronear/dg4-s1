@@ -1,6 +1,5 @@
 import numpy as np
 from pyproj import Transformer
-import matplotlib.pyplot as plt
 
 def to_xy(lat, lon, altitude=None, epsg='2154'):
     '''project a point from latitude longitude (EPSG:4326) to X,Y coordinates, default is Lambert 93 (EPSG:2154)
@@ -198,7 +197,7 @@ def skyline_to_cartesian(spherical, angles, skyline, view_point, max_z):
         skyline_points[phi] = np.add(cart_point, view_point)
     return skyline_points
 
-def skyline_depth(spherical, angles, skyline, transform_depth=True, savepath=True):
+def skyline_depth(spherical, angles, skyline, transform_depth=True, savepath=False):
     '''Get the radius value (depth) of the skyline in spherical coordinates
 
     Args:

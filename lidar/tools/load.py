@@ -10,8 +10,7 @@ import math
 from pathlib import Path
 import elevation as eio
 from osgeo import gdal
-from pyproj import Transformer
-from tools import project
+from tools import project, signal
 
 def las_to_point(las):
     '''Convert a las object into an array of points x,y,z
@@ -208,7 +207,7 @@ def download_from_eio(datapath, name, lat=0, lon=0, distance=50, bounds=None, ep
     xyz_df.to_csv(xyz_file, sep=' ', header=False, index=False)
     print('File', xyz_file, 'ready.')
 
-def load_skyline(filepath, fov, width, height, plot=False):
+def load_skyline(filepath, fov, width, height,  n=5, plot=False):
     '''Load and prepare a skyline as numpy array
 
     Args:
@@ -216,6 +215,7 @@ def load_skyline(filepath, fov, width, height, plot=False):
         fov (float): field of view in degrees
         width (int): width of the image from which is extracted the skyline, in pixels
         height (int): height of the image, in pixels
+        n (int, optional): smoothing factor, default to 5
         plot (boolean, optional): if true, plot the skyline. Default to False
 
     Returns:
@@ -240,12 +240,13 @@ def load_skyline(filepath, fov, width, height, plot=False):
     # interpolate to be sure to have a y value for each x
     full_skyline = np.interp(np.arange(0,width), x_values, y_values)
     # smooth skyline
-    n=5
     smooth_image_skyline = np.convolve(full_skyline, np.ones(n)/n, mode='valid')
     # downsample the image skyline to the fov width
     indices = np.linspace(0, width, num=fov, dtype=int, endpoint=False)
     reduced_image_skyline = np.take(smooth_image_skyline, indices)
-    
+    # finally smooth (again) the signal
+    reduced_image_skyline = signal.pad_smooth(reduced_image_skyline, n)
+
     # plot if requested
     if plot:
         plt.xlim(0, width)
