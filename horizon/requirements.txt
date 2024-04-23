@@ -1,0 +1,13 @@
+numpy
+pandas
+open3d
+laspy[lazrs,laszip]
+pyproj
+matplotlib
+timm
+opencv-python
+elevation
+gdal
+rasterio
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu

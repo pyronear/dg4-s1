@@ -1,16 +1,25 @@
 # Smoke localization
+As soon as a suspicious smoke is detected, there is the need to precisely geolocate it, so the fire services can intervene quickly. The following tools aims to estimate a given point location from an image. 
 
-## Lidar data
-Go to [`./lidar`](./lidar)  
-Install [`requirements.txt`](./lidar/requirements.txt) in your environment:  
-`pip install requirements.txt`  
+## Try
+1. Go to `georefcam/` and `horizon/` to install the packages. You can also find more details.   
+2. Test the notebooks in `demo_notebooks/`.  
 
-### Download the data (once)
-- either from [IGN geoservice](https://geoservices.ign.fr/lidarhd) where you can select the tiles you want
-- or directly from the notebook [`visualize_terrain.ipynb`](./lidar/visualize_terrain.ipynb), where a preselection of tiles is available in `liste_dalle_*.txt`
+## Pipeline
+![](plots/pipeline_white.svg)
 
-### Load data
-Once the lidar data is loaded and downsampled, it is saved into `.pcd` files, where it can be quickly loaded next times.
+1. Load Digital Elevation Model (DEM) from image location
 
-## Explore
-Open [`visualize_terrain.ipynb`](./lidar/visualize_terrain.ipynb) and follow the steps.
+2. Extract 360° skyline from viewpoint
+
+3. Extract skyline from image (with Depth-Anything and filters)
+
+4. Compare skylines and find best alignment, this corresponds to the camera azimuth.
+
+5. Place a virtual camera in DEM at correct azimuth and generate depth map.
+
+6. Estimate depths from images (Depth-Anything)
+
+7. Correct the virtual camera by comparing the depths
+
+8. Get the location of any point in the image

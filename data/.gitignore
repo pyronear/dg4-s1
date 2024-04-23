@@ -1,0 +1,8 @@
+pyronear_cam_data/*
+alertwildfire/*
+geopose3k/*
+horizon/**/*.npy
+terrain/**/*.laz
+terrain/**/*.xyz
+terrain/**/*.pcd
+ds_eval_loc/*
