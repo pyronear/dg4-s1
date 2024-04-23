@@ -1,0 +1,12 @@
+better-abc
+cameratransform @ git+https://github.com/rgerum/cameratransform.git
+geopandas
+ipympl
+jupyterlab
+matplotlib
+nptyping
+numpy
+pandas
+pandera
+pyproj
+pyvista[all, trame, trimesh, rtree, pyembree]

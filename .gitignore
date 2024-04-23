@@ -13,3 +13,4 @@ lidar/data/ds_eval_loc/*
 .token
 .venv
 *.tiff
+.ipynb_checkpoints
