@@ -9,17 +9,22 @@ As soon as a suspicious smoke is detected, there is the need to precisely geoloc
 ![](plots/pipeline_white.svg)
 
 1. Load Digital Elevation Model (DEM) from image location
+![](plots/open3d_dem.png)
 
 2. Extract 360° skyline from viewpoint
+![](plots/viewpoint_skyline.png)
 
 3. Extract skyline from image (with Depth-Anything and filters)
+![](plots/image_skyline.png)
 
 4. Compare skylines and find best alignment, this corresponds to the camera azimuth.
+![](plots/skylines_comparison.png)
 
 5. Place a virtual camera in DEM at correct azimuth and generate depth map.
 
 6. Estimate depths from images (Depth-Anything)
 
 7. Correct the virtual camera by comparing the depths
+![](plots/depth_correction.png)
 
 8. Get the location of any point in the image

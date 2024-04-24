@@ -297,7 +297,7 @@ class GeoRefCam:
         df_ray = df_ray.sort_values("n_ray").set_index("n_ray")
 
         filtered_inter_points = df_ray[["inter_x", "inter_y", "inter_z"]].to_numpy(dtype=float)
-        filtered_inter_triangles = df_ray.n_tri.to_numpy(dtype=float)
+        filtered_inter_triangles = df_ray.n_tri.dropna().to_numpy(dtype=float)
 
         return filtered_inter_points, filtered_inter_triangles, df_ray
 

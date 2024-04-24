@@ -1,8 +1,6 @@
 # Horizon package
 ## Installation
-- check that build is installed: `pip install --upgrade build`
-- from this folder, run `python -m build`
-- then install the package with `pip install dist/horizon-0.0.0-py3-none-any.whl` or any `.whl` file generated  
+- from this folder, run `pip install .`  
 
 No need to install `requirements.txt` as this is included in the package dependancies.
 

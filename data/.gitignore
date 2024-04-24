@@ -1,8 +1,10 @@
 pyronear_cam_data/*
 alertwildfire/*
 geopose3k/*
+BDALTI/
 horizon/**/*.npy
 terrain/**/*.laz
 terrain/**/*.xyz
 terrain/**/*.pcd
+terrain/**/*.pkl
 ds_eval_loc/*

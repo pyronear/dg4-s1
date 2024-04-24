@@ -1,5 +1,5 @@
 better-abc
-cameratransform @ git+https://github.com/rgerum/cameratransform.git
+cameratransform @ git+https://github.com/rgerum/cameratransform@master
 elevation
 geopandas
 ipympl

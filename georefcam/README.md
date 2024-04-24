@@ -21,11 +21,11 @@ Le dossier contient également
 
 ### Exécution des notebook test
 
-Les étapes nécessaires à l'exécution d'un notebook sont donc les suivantes :
-- Installation des dépendances nécessaires : `pip install -r georefcam/requirements.txt`
-- Installation du package `georefcam` : `pip install georefcam/`
+Les étapes nécessaires à l'exécution d'un notebook sont donc les suivantes (depuis le dossier actuel):
+- Installation des dépendances nécessaires : `pip install -r requirements.txt`
+- Installation du package `georefcam` : `pip install .`
 - Téléchargement des [données et galeries d'images de caméras](https://drive.google.com/file/d/1GsJIjNyjnZjV2tzMuB0xTZ2hwz-lpRjB/view?usp=sharing)
-- Téléchargement et extraction des [données IGN utilisées](https://wxs.ign.fr/aqd29otkz2hofiee5pb0fygn/telechargement/prepackage/BDALTI-25M_PACK_FXX_2023-02-01$BDALTIV2_2-0_25M_ASC_LAMB93-IGN69_D007_2022-12-16/file/BDALTIV2_2-0_25M_ASC_LAMB93-IGN69_D007_2022-12-16.7z)
+- Téléchargement et extraction des [données IGN utilisées](https://data.geopf.fr/telechargement/download/BDALTI/BDALTIV2_2-0_25M_ASC_LAMB93-IGN69_D007_2022-12-16/BDALTIV2_2-0_25M_ASC_LAMB93-IGN69_D007_2022-12-16.7z)
 - Édition de la cellule du notebook qui indique les chemins de dossiers contenant les données
 - Exécution séquentielle du notebook
 
