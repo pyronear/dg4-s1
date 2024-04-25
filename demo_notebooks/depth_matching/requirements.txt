@@ -1,0 +1,11 @@
+pandas
+elevation
+utm
+matplotlib
+pillow
+pyvista
+trame-vtk
+trame-vuetify
+rasterio
+transformers
+torch --index-url https://download.pytorch.org/whl/cpu

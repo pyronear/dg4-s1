@@ -1,4 +1,7 @@
 **/.fuse_hidden*
-lidar/data/MNS/*.laz
-lidar/data/pyronear_cam_data/*
+**/cache/*
+**/__pycache__/*
 .token
+.venv
+*.tiff
+.ipynb_checkpoints
