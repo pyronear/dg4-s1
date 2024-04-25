@@ -1,8 +1,10 @@
 # Smoke localization
 As soon as a suspicious smoke is detected, there is the need to precisely geolocate it, so the fire services can intervene quickly. The following tools aims to estimate a given point location from an image. 
 
-## Try
-1. Go to `georefcam/` and `horizon/` to install the packages. You can also find more details.   
+## Installation
+1. Install local packages and dependancies (from this directory):
+ -  `pip install horizon/` 
+ - `pip install georefcam/` 
 2. Test the notebooks in `demo_notebooks/`.  
 
 ## Pipeline

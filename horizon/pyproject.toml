@@ -8,18 +8,7 @@ authors = [{name = "Nicolas Denier"}]
 license = {text = "Apache-2.0"}
 version = "0.0.0"
 requires-python = ">=3.8"
-dependencies = [
-    "numpy",
-    "pandas",
-    "open3d",
-    "laspy[lazrs,laszip]",
-    "pyproj",
-    "matplotlib",
-    "timm",
-    "opencv-python",
-    "elevation",
-    "gdal",
-    "rasterio",
-    "transformers",
-    "torch",
-]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}

@@ -8,19 +8,10 @@ authors = [{name = "Florent Scarpa", email = "florent.scarpa@hotmail.fr"}]
 license = {text = "Apache-2.0"}
 version = "0.0.0"
 requires-python = ">=3.8"
-dependencies = [
-    "better-abc",
-    "cameratransform",
-    "nptyping",
-    "numpy",
-    "pandas",
-    "pandera",
-    "pyembree",
-    "pyproj",
-    "pyvista",
-    "rtree",
-    "trimesh",
-]
+dynamic = ["dependencies"]
+
+[tool.setuptools.dynamic]
+dependencies = {file = ["requirements.txt"]}
 
 [tool.setuptools.packages]
 find = {}

@@ -3,7 +3,7 @@ This folder gather all the data used in this project. Most of the files are not 
 
 | Folder name  | Source | Description |
 |---|---|---|
-| pyronear_cam_data  | Pyronear  | Images and metadata from cameras used for fire detection at different viewpoints in France |
+| pyronear_cam_data  | [Pyronear](https://drive.google.com/file/d/1GsJIjNyjnZjV2tzMuB0xTZ2hwz-lpRjB/view?usp=sharing)  | Images and metadata from cameras used for fire detection at different viewpoints in France |
 | alertwildfire | [ALERTWildfire](https://www.alertwildfire.org/) | Images and metadata from cameras used for fire detection at different viewpoints in USA |
 | geopose3k| [GeoPose3K](https://cphoto.fit.vutbr.cz/geoPose3K/)| 3k mountain landscape photos, with camera coordinates and orientations, depth estimations, terrain illuminations, and more |
 | terrain | [elevation](https://pypi.org/project/elevation/) or [IGN](https://geoservices.ign.fr/lidarhd)| Digital elevation model (DEM) coming from lidar measurements. Downloaded by zone of interest and transformed into point cloud files (.xyz)|

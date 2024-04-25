@@ -1,4 +1,6 @@
 # Horizon package
+Package to extract horizon from a Digital Elevation Model or from an image. Compare horizons to find the matching azimuth.  
+
 ## Installation
 - from this folder, run `pip install .`  
 
